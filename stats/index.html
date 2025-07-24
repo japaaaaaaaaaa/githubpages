@@ -1,119 +1,170 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Carregando estatísticas...</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Confirmação</title>
   <style>
-    html, body {
+    * {
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
       height: 100%;
-      background: white;
-      font-family: sans-serif;
+      font-family: Arial, sans-serif;
       overflow: hidden;
+      background: black;
     }
 
-    #cookie-modal {
+    .overlay {
       position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+      z-index: 10;
+      background: #ffffff;
+      color: #111;
+      width: 100%;
+      height: 100%;
+      padding: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .content {
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
       width: 90%;
-      max-width: 400px;
-      background: #f9f9f9;
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-      z-index: 1000;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
     }
 
-    #cookie-modal p {
-      font-size: 14px;
+    .content h1 {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #000;
+    }
+
+    .content p {
+      font-size: 15px;
       color: #333;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
 
-    #cookie-modal button {
-      background: #007bff;
+    .content .highlight {
+      font-weight: bold;
+      color: #19f2f2;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .button {
+      padding: 10px 25px;
+      font-size: 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 110px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .accept {
+      background-color: #19f2f2;
       color: white;
       border: none;
-      padding: 10px 20px;
-      cursor: pointer;
-      border-radius: 4px;
     }
 
-    #screamer {
-      display: none;
+    .decline {
+      background-color: white;
+      color: #19f2f2;
+      border: 2px solid #19f2f2;
+    }
+
+    .privacy {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #19f2f2;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .terms-text {
+      font-size: 11px;
+      color: #666;
+      margin-top: 15px;
+      max-height: 80px;
+      overflow-y: auto;
+    }
+
+    video {
+      width: 100vw;
+      height: 100vh;
+      object-fit: contain;
+      background: black;
       position: fixed;
       top: 0;
       left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: black;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      transition: filter 0.2s ease;
-    }
-
-    #screamer img {
-      max-width: 100vw;
-      max-height: 100vh;
-      object-fit: contain;
+      z-index: 1;
+      display: none;
     }
   </style>
 </head>
 <body>
 
-  <div id="cookie-modal">
-    <p>Este site utiliza cookies para garantir que você tenha a melhor experiência. Ao continuar navegando, você concorda com nossos Termos de Uso e Política de Privacidade.</p>
-    <button id="accept-btn">Aceitar e continuar</button>
+  <div class="overlay" id="overlay">
+    <div class="content">
+      <h1>Cookies e conteúdo gerado por usuários</h1>
+      <p>Este site utiliza cookies para oferecer a melhor experiência e entender como você interage com ele. Aceite os cookies para melhor performance.</p>
+      <p>O conteúdo gerado por usuários pode não ser adequado para visitantes com <span class="highlight">risco de epilepsia fotosensível</span>.</p>
+      <div class="buttons">
+        <button class="button accept" id="start">Aceitar</button>
+        <button class="button decline">Recusar</button>
+      </div>
+      <div class="privacy">Política de Privacidade</div>
+      <div class="terms-text">
+        Ao continuar, você concorda com os termos e condições de uso do site.
+      </div>
+    </div>
   </div>
 
-  <div id="screamer">
-    <img src="screamer.png" alt="Screamer">
-    <audio id="screamAudio" src="screamer.mp3" loop></audio>
-  </div>
+  <video id="screamer" src="screamer.mp4" autoplay loop muted></video>
 
   <script>
-    const cookieModal = document.getElementById('cookie-modal');
-    const screamer = document.getElementById('screamer');
-    const screamAudio = document.getElementById('screamAudio');
-    let flashing = false;
+    const overlay = document.getElementById('overlay');
+    const button = document.getElementById('start');
+    const video = document.getElementById('screamer');
 
-    function startFlashing() {
-      if (flashing) return;
-      flashing = true;
-      let inverted = false;
-      setInterval(() => {
-        screamer.style.filter = inverted ? 'none' : 'invert(1)';
-        inverted = !inverted;
-      }, 10);
-    }
+    let allowed = false;
 
-    function activateScreamer() {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(() => {});
-      }
-      cookieModal.style.display = 'none';
-      screamer.style.display = 'flex';
-      screamAudio.play();
-      startFlashing();
-    }
+    button.onclick = () => {
+      overlay.style.display = "none";
+      video.style.display = "block";
+      video.muted = false;
+      video.volume = 1.0; // volume máximo
+      video.play();
+      allowed = true;
 
-    // Impedir que o onbeforeunload pare o JS (não tem como evitar a pausa, mas reinicia ao voltar)
-    window.onbeforeunload = function () {
-      return "Tem certeza de que deseja sair?";
+      // Forçar tela cheia
+      const el = document.documentElement;
+      if (el.requestFullscreen) el.requestFullscreen();
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      else if (el.msRequestFullscreen) el.msRequestFullscreen();
     };
 
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) {
-        screamAudio.play();
-      }
-    });
-
-    document.getElementById('accept-btn').addEventListener('click', activateScreamer);
-    document.addEventListener('click', activateScreamer, { once: true });
+    window.onbeforeunload = function () {
+      if (allowed) return true;
+    };
   </script>
 
 </body>
