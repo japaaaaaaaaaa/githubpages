@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Quiz</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    #quiz-container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .btn:hover {
+      background-color: #45a049;
+    }
+
+    #timer {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div id="quiz-container">
+    <h1 id="title">Quiz</h1>
+    <button class="btn" id="start-btn">Começar</button>
+  </div>
+
+  <script>
+    const quizData = [
+      { question: "Qual é a capital do Brasil?", correct: "Brasília", incorrect: ["Rio de Janeiro", "São Paulo", "Belo Horizonte"] },
+      { question: "Qual é o resultado de 7 × 8?", correct: "56", incorrect: ["48", "64", "58"] },
+      { question: "Qual planeta é conhecido como planeta vermelho?", correct: "Marte", incorrect: ["Júpiter", "Vênus", "Saturno"] },
+      { question: "Quem escreveu 'Dom Casmurro'?", correct: "Machado de Assis", incorrect: ["José de Alencar", "Carlos Drummond", "Clarice Lispector"] },
+      { question: "Qual é o maior oceano do planeta?", correct: "Oceano Pacífico", incorrect: ["Oceano Atlântico", "Oceano Índico", "Oceano Ártico"] },
+      { question: "Qual o símbolo químico da água?", correct: "H₂O", incorrect: ["HO", "H2", "O2H"] },
+      { question: "Em que continente fica o Egito?", correct: "África", incorrect: ["Ásia", "Europa", "América"] },
+      { question: "Quantos segundos tem um minuto?", correct: "60", incorrect: ["100", "30", "90"] },
+      { question: "Quem descobriu o Brasil?", correct: "Pedro Álvares Cabral", incorrect: ["Cristóvão Colombo", "Vasco da Gama", "Dom Pedro I"] },
+      { question: "Qual é a fórmula da velocidade média?", correct: "V = ΔS / ΔT", incorrect: ["V = S × T", "V = T / S", "V = S + T"] },
+      { question: "Qual é a capital da Argentina?", correct: "Buenos Aires", incorrect: ["Mendoza", "Rosário", "Córdoba"] },
+      { question: "Quantos lados tem um hexágono?", correct: "6", incorrect: ["5", "7", "8"] },
+      { question: "O que significa a sigla 'ONU'?", correct: "Organização das Nações Unidas", incorrect: ["Organização Nacional Unida", "Ordem das Nações Unidas", "Ordem Nacional Universal"] },
+      { question: "Qual é o maior planeta do sistema solar?", correct: "Júpiter", incorrect: ["Saturno", "Terra", "Netuno"] },
+      { question: "Qual animal é conhecido como 'rei da selva'?", correct: "Leão", incorrect: ["Tigre", "Elefante", "Pantera"] },
+      { question: "Quantas cores tem o arco-íris?", correct: "7", incorrect: ["6", "8", "5"] },
+      { question: "Quem pintou a Mona Lisa?", correct: "Leonardo da Vinci", incorrect: ["Pablo Picasso", "Michelangelo", "Vincent van Gogh"] },
+      { question: "Qual o menor país do mundo?", correct: "Vaticano", incorrect: ["Mônaco", "Malta", "San Marino"] },
+      { question: "Em que país fica a Torre Eiffel?", correct: "França", incorrect: ["Itália", "Espanha", "Inglaterra"] },
+      { question: "Qual o valor de π (pi) arredondado?", correct: "3,14", incorrect: ["2,71", "3,41", "4,13"] }
+    ];
+
+    const container = document.getElementById('quiz-container');
+    const startBtn = document.getElementById('start-btn');
+
+    let current = 0;
+    let score = 0;
+    let startTime;
+    let timerInterval;
+
+    startBtn.onclick = () => {
+      startBtn.remove();
+      document.getElementById('title').remove();
+      startTime = performance.now();
+      timerInterval = setInterval(updateTimer, 10);
+      loadQuestion();
+    };
+
+    function updateTimer() {
+      const now = performance.now();
+      const elapsed = ((now - startTime) / 1000).toFixed(3);
+      const timerEl = document.getElementById('timer');
+      if (timerEl) timerEl.textContent = `Tempo: ${elapsed}s`;
+    }
+
+    function loadQuestion() {
+      container.innerHTML = "";
+
+      if (current >= quizData.length) return finishQuiz();
+
+      const q = quizData[current];
+      const answers = [...q.incorrect, q.correct];
+      answers.sort(() => Math.random() - 0.5);
+
+      const questionEl = document.createElement('h2');
+      questionEl.textContent = q.question;
+      container.appendChild(questionEl);
+
+      answers.forEach(answer => {
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.textContent = answer;
+        btn.onclick = () => {
+          if (answer === q.correct) score++;
+          current++;
+          loadQuestion();
+        };
+        container.appendChild(btn);
+      });
+
+      const timer = document.createElement('div');
+      timer.id = 'timer';
+      container.appendChild(timer);
+    }
+
+    function finishQuiz() {
+      clearInterval(timerInterval);
+      const totalTime = ((performance.now() - startTime) / 1000).toFixed(3);
+      container.innerHTML = `
+        <h2>Você acertou ${score} de ${quizData.length} perguntas.</h2>
+        <p>Tempo total: ${totalTime}s</p>
+        <button class="btn" onclick="location.reload()">Mais uma vez!</button>
+      `;
+    }
+  </script>
+</body>
+</html>
